@@ -1,0 +1,29 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  text-align: center;
+  background-color: brown;
+}
+
+img {
+  padding-right: 10px;
+}
+
+.label {
+  color: white;
+}
+
+.heading {
+  text-align: center;
+  font-size: 30px;
+  font-weight: 800;
+  padding-bottom: 20px;
+  color: white;
+}
+
+.container {
+  margin: 10;
+  padding: 0;
+}
