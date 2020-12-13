@@ -23,7 +23,7 @@ document.querySelector("form").addEventListener('submit', (event) => {
     }
   })
   .catch(e => {
-    console.log("fetching");
+    console.log("Got some errors");
     console.log(e);
   })
 
