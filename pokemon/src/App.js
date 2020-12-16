@@ -16,6 +16,7 @@ function App() {
   const [card, setCard] = React.useState([]);
   const [loaded, setLoaded] = React.useState(false);
   const [playerStats, setPlayerStats] = React.useState([0, 0]);
+  const [unfade, doUnfade] = React.useState([[], []]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -52,12 +53,12 @@ function App() {
   return (
     <Grid container>
       <Grid id="deck" item xs={6} >
-        <Typography variant="h2" style={{ color: 'yellow' }}>{playerStats[0]}</Typography>
-        <CardDeck pid={0} cards={c1} oponentCard={c2} playerStats={playerStats} setPlayerStats={setPlayerStats} />
+        <Typography align="center" variant="h2" style={{ color: 'yellow', backgroundColor: 'red' }}>P1: {playerStats[0]}</Typography>
+        <CardDeck pid={0} cards={c1} oponentCard={c2} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} />
       </Grid>
       <Grid id="deck" item xs={6}>
-        <Typography variant="h2" style={{ color: 'red' }}>{playerStats[1]}</Typography>
-        <CardDeck pid={1} cards={c2} oponentCard={c1} playerStats={playerStats} setPlayerStats={setPlayerStats} />
+        <Typography align="center" variant="h2" style={{ color: 'red', backgroundColor: 'yellow' }}>P2: {playerStats[1]}</Typography>
+        <CardDeck pid={1} cards={c2} oponentCard={c1} playerStats={playerStats} setPlayerStats={setPlayerStats}  unfade={unfade} doUnfade={doUnfade}/>
       </Grid>
     </Grid>
   );

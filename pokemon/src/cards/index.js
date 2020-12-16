@@ -13,7 +13,7 @@ const from = i => ({ x: 0, rot: 0, scale: 1.5, y: -1000 })
 // This is being used down there in the view, it interpolates rotation and scale into a css transform
 const trans = (r, s) => `perspective(1500px) rotateX(30deg) rotateY(${r / 10}deg) rotateZ(${r}deg) scale(${s})`
 
-export default function Deck({ pid, cards, oponentCard, playerStats, setPlayerStats }) {
+export default function Deck({ pid, cards, oponentCard, playerStats, setPlayerStats, unfade, doUnfade }) {
   const [gone] = useState(() => new Set()) // The set flags all the cards that are flicked out
 
   const [props, set] = useSprings(cards.length, i => ({ ...to(i), from: from(i) })) // Create a bunch of springs using the helpers above
@@ -32,35 +32,70 @@ export default function Deck({ pid, cards, oponentCard, playerStats, setPlayerSt
     })
     if (!down && gone.size === cards.length) setTimeout(() => gone.clear() || set(i => to(i)), 600)
   })
+  
   // Now we're just mapping the animated values to our view, that's it. Btw, this component only renders once. :-)
   return props.map(({ x, y, rot, scale }, i) => (
     <animated.div key={i} style={{ transform: interpolate([x, y], (x, y) => `translate3d(${x}px,${y}px,0)`) }}>
       {/* This is the card itself, we're binding our gesture to it (and inject its index so we know which is which) */}
       <animated.div {...bind(i)} style={{
-        backgroundColor: 'lightblue',
+        backgroundColor: 'white',
         transform: interpolate([rot, scale], trans),
-        backgroundImage: `url(${cards[i].url})`,
-        backgroundSize: 'contain',
-        backgroundPositionY: 'top',
+        padding: '10px',
       }} >
-        <Container style={{ marginTop: '340px', backgroundColor: 'rgba(255, 255, 0, 0.4)', paddingBottom: '20px' }}>
-          <Typography variant="h3" align="center" style={{ fontWeight: 700 }} playerStats={playerStats}>{cards[i].name}</Typography>
-          <CustomButton pid={pid} data={`Attack: ${cards[i].attack}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} />
-          <CustomButton pid={pid} data={`Speed: ${cards[i].speed}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} />
-          <CustomButton pid={pid} data={`Hp: ${cards[i].hp}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} />
-          <CustomButton pid={pid} data={`Weight: ${cards[i].weight}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} />
-        </Container>
+        {
+          !unfade[pid].includes(i)
+            ? (
+              <Container style={{
+                backgroundImage: `url('https://cdn.bulbagarden.net/upload/1/17/Cardback.jpg')`,
+                height: '100%',
+                width: '100%',
+                backgroundSize: 'cover',
+                backgroundRepeat: 'no-repeat',
+              }}
+                onClick={() => {
+                  pid === 0
+                    ? doUnfade([[...unfade[0], i], [...unfade[1]]])
+                    : doUnfade([[...unfade[0]], [...unfade[1], i]])
+                }}
+              >
+                <Typography variant="h3">{i}</Typography>
+              </Container>
+            ) : (
+              <Container style={{
+                backgroundColor: 'rgba(255, 255, 0, 0.4)',
+                backgroundImage: `url(${cards[i].url})`,
+                backgroundSize: 'contain',
+                backgroundPositionY: 'top',
+                backgroundRepeat: 'no-repeat',
+                height: '100%'
+              }}>
+                <div style={{ paddingTop: '350px' }}>
+                  {/* <Typography variant="h3">{i}</Typography> */}
+                  <Typography variant="h3" noWrap align="center" style={{ fontWeight: 700 }} playerStats={playerStats}>{cards[i].name}</Typography>
+                  <CustomButton pid={pid} data={`Attack: ${cards[i].attack}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} />
+                  <CustomButton pid={pid} data={`Speed: ${cards[i].speed}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} />
+                  <CustomButton pid={pid} data={`Hp: ${cards[i].hp}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} />
+                  <CustomButton pid={pid} data={`Weight: ${cards[i].weight}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} />
+                </div>
+              </Container>
+            )
+        }
       </animated.div>
     </animated.div>
   ))
 }
 
-function CustomButton({ pid, data, index, oponentCard, playerStats, setPlayerStats }) {
+function CustomButton({ pid, data, index, oponentCard, playerStats, setPlayerStats, unfade, doUnfade }) {
   const id = data.split(":")[0].toLowerCase();
 
   return <Button
     id={id}
     onClick={(event) => {
+      pid === 1
+      ? doUnfade([[...unfade[0], index], [...unfade[1]]])
+      : doUnfade([[...unfade[0]], [...unfade[1], index]])
+
+      
       console.log(index);
       console.log(event);
       console.log(id);
@@ -69,7 +104,10 @@ function CustomButton({ pid, data, index, oponentCard, playerStats, setPlayerSta
       console.log(oponentCard[index][id]);
       console.log(pid);
       console.log(typeof (pid));
-      if (pid === 0) {
+      if(parseInt(data.split(" ")[1]) === oponentCard[index][id]) {
+        setPlayerStats([playerStats[0] + 1, playerStats[1] + 1]);
+      }
+      else if (pid === 0) {
         if (parseInt(data.split(" ")[1]) > oponentCard[index][id]) {
           console.log("Player 1 wins")
           setPlayerStats([playerStats[0] + 1, playerStats[1]]);
