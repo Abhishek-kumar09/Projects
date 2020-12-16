@@ -13,13 +13,13 @@ const from = i => ({ x: 0, rot: 0, scale: 1.5, y: -1000 })
 // This is being used down there in the view, it interpolates rotation and scale into a css transform
 const trans = (r, s) => `perspective(1500px) rotateX(30deg) rotateY(${r / 10}deg) rotateZ(${r}deg) scale(${s})`
 
-export default function Deck({ pid, cards, oponentCard, playerStats, setPlayerStats, unfade, doUnfade }) {
+export default function Deck({ pid, cards, oponentCard, playerStats, setPlayerStats, unfade, doUnfade, revealedCount, setRevCount, setGameOver }) {
   const [gone] = useState(() => new Set()) // The set flags all the cards that are flicked out
 
   const [props, set] = useSprings(cards.length, i => ({ ...to(i), from: from(i) })) // Create a bunch of springs using the helpers above
   // Create a gesture, we're interested in down-state, delta (current-pos - click-pos), direction and velocity
   const bind = useGesture(({ args: [index], down, delta: [xDelta], distance, direction: [xDir], velocity }) => {
-    const trigger = velocity > 0.2 // If you flick hard enough it should trigger the card to fly out
+    const trigger = velocity > 0.2 && index >= cards.length - revealedCount // If you flick hard enough it should trigger the card to fly out
     const dir = xDir < 0 ? -1 : 1 // Direction should either point left or right
     if (!down && trigger) gone.add(index) // If button/finger's up and trigger velocity is reached, we flag the card ready to fly out
     set(i => {
@@ -27,10 +27,14 @@ export default function Deck({ pid, cards, oponentCard, playerStats, setPlayerSt
       const isGone = gone.has(index)
       const x = isGone ? (200 + window.innerWidth) * dir : down ? xDelta : 0 // When a card is gone it flys out left or right, otherwise goes back to zero
       const rot = xDelta / 100 + (isGone ? dir * 10 * velocity : 0) // How much the card tilts, flicking it harder makes it rotate faster
-      const scale = down ? 1.1 : 1 // Active cards lift up a bit
+      const scale = down ? 1.05 : 1 // Active cards lift up a bit
       return { x, rot, scale, delay: undefined, config: { friction: 50, tension: down ? 800 : isGone ? 200 : 500 } }
     })
-    if (!down && gone.size === cards.length) setTimeout(() => gone.clear() || set(i => to(i)), 600)
+    if (!down && gone.size === cards.length) setTimeout(() => {
+      setGameOver(true)
+      set(i => to(i))  
+      gone.clear()
+    }, 600)
   })
   
   // Now we're just mapping the animated values to our view, that's it. Btw, this component only renders once. :-)
@@ -72,10 +76,10 @@ export default function Deck({ pid, cards, oponentCard, playerStats, setPlayerSt
                 <div style={{ paddingTop: '350px' }}>
                   {/* <Typography variant="h3">{i}</Typography> */}
                   <Typography variant="h3" noWrap align="center" style={{ fontWeight: 700 }} playerStats={playerStats}>{cards[i].name}</Typography>
-                  <CustomButton pid={pid} data={`Attack: ${cards[i].attack}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} />
-                  <CustomButton pid={pid} data={`Speed: ${cards[i].speed}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} />
-                  <CustomButton pid={pid} data={`Hp: ${cards[i].hp}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} />
-                  <CustomButton pid={pid} data={`Weight: ${cards[i].weight}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} />
+                  <CustomButton pid={pid} data={`Attack: ${cards[i].attack}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} revealedCount={revealedCount} setRevCount={setRevCount}  />
+                  <CustomButton pid={pid} data={`Speed: ${cards[i].speed}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} revealedCount={revealedCount} setRevCount={setRevCount}  />
+                  <CustomButton pid={pid} data={`Hp: ${cards[i].hp}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} revealedCount={revealedCount} setRevCount={setRevCount}  />
+                  <CustomButton pid={pid} data={`Weight: ${cards[i].weight}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} revealedCount={revealedCount} setRevCount={setRevCount}  />
                 </div>
               </Container>
             )
@@ -85,7 +89,7 @@ export default function Deck({ pid, cards, oponentCard, playerStats, setPlayerSt
   ))
 }
 
-function CustomButton({ pid, data, index, oponentCard, playerStats, setPlayerStats, unfade, doUnfade }) {
+function CustomButton({ pid, data, index, oponentCard, playerStats, setPlayerStats, unfade, doUnfade, revealedCount, setRevCount  }) {
   const id = data.split(":")[0].toLowerCase();
 
   return <Button
@@ -95,7 +99,7 @@ function CustomButton({ pid, data, index, oponentCard, playerStats, setPlayerSta
       ? doUnfade([[...unfade[0], index], [...unfade[1]]])
       : doUnfade([[...unfade[0]], [...unfade[1], index]])
 
-      
+      console.log("rev count:  "+revealedCount);
       console.log(index);
       console.log(event);
       console.log(id);
@@ -125,10 +129,12 @@ function CustomButton({ pid, data, index, oponentCard, playerStats, setPlayerSta
         }
       }
       console.log(playerStats);
+      setRevCount(revealedCount + 1);
+      // setTimeout(()=> {
+        
+      // }, 3000)
     }}
-    style={{ display: 'block', width: '100%', height: '30px' }} >
+    style={{ display: 'block', width: '100%', height: '30px', padding: '8px' }} >
     <Typography variant="h5">{data}</Typography>
   </Button>
 }
-
-// render(<Deck />, document.getElementById('root'))

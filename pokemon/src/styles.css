@@ -3,7 +3,7 @@
 }
 
 html, body {
-  background-image: linear-gradient(to right, red 49.5%, yellow 50%);
+  background-image: linear-gradient(to right, red 50%, yellow 50%);
   overscroll-behavior-y: contain;
   margin: 0;
   padding: 0;

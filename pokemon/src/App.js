@@ -17,6 +17,8 @@ function App() {
   const [loaded, setLoaded] = React.useState(false);
   const [playerStats, setPlayerStats] = React.useState([0, 0]);
   const [unfade, doUnfade] = React.useState([[], []]);
+  const [revealedCount, setRevCount] = React.useState(0);
+  const [gameOver, go] = React.useState(false);
 
   useEffect(() => {
     setTimeout(() => {
@@ -50,15 +52,18 @@ function App() {
   const c1 = card.slice(0, 4);
   const c2 = card.slice(4, 8);
 
-  return (
+  return (    
     <Grid container>
+      {gameOver ? <Typography align="center" variant="h2" style={{display: "block", width: '100vw', height: '100vh',  backgroundColor: '#4BB543', position: 'absolute' }}>
+        {playerStats[0] > playerStats[1] ? "Player 1" : "Player 2"} Wins with score {Math.max(playerStats[0], playerStats[1])}
+      </Typography>: <></>}
       <Grid id="deck" item xs={6} >
         <Typography align="center" variant="h2" style={{ color: 'yellow', backgroundColor: 'red' }}>P1: {playerStats[0]}</Typography>
-        <CardDeck pid={0} cards={c1} oponentCard={c2} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} />
+        <CardDeck pid={0} cards={c1} oponentCard={c2} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} revealedCount={revealedCount} setRevCount={setRevCount} setGameOver={go} />
       </Grid>
       <Grid id="deck" item xs={6}>
         <Typography align="center" variant="h2" style={{ color: 'red', backgroundColor: 'yellow' }}>P2: {playerStats[1]}</Typography>
-        <CardDeck pid={1} cards={c2} oponentCard={c1} playerStats={playerStats} setPlayerStats={setPlayerStats}  unfade={unfade} doUnfade={doUnfade}/>
+        <CardDeck pid={1} cards={c2} oponentCard={c1} playerStats={playerStats} setPlayerStats={setPlayerStats}  unfade={unfade} doUnfade={doUnfade} revealedCount={revealedCount} setRevCount={setRevCount}  setGameOver={go} />
       </Grid>
     </Grid>
   );
