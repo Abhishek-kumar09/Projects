@@ -13,8 +13,8 @@ const from = i => ({ x: 0, rot: 0, scale: 1.5, y: -1000 })
 // This is being used down there in the view, it interpolates rotation and scale into a css transform
 const trans = (r, s) => `perspective(1500px) rotateX(30deg) rotateY(${r / 10}deg) rotateZ(${r}deg) scale(${s})`
 
-export default function Deck({ pid, cards, oponentCard, playerStats, setPlayerStats, unfade, doUnfade, revealedCount, setRevCount, setGameOver }) {
-  const [gone] = useState(() => new Set()) // The set flags all the cards that are flicked out
+export default function Deck({ pid, cards, oponentCard, playerStats, setPlayerStats, unfade, doUnfade, revealedCount, setRevCount, setGameOver, pressed }) {
+  const [gone] = useState(() => new Set()) // The set flags all the cards that are flicked out  
 
   const [props, set] = useSprings(cards.length, i => ({ ...to(i), from: from(i) })) // Create a bunch of springs using the helpers above
   // Create a gesture, we're interested in down-state, delta (current-pos - click-pos), direction and velocity
@@ -32,11 +32,11 @@ export default function Deck({ pid, cards, oponentCard, playerStats, setPlayerSt
     })
     if (!down && gone.size === cards.length) setTimeout(() => {
       setGameOver(true)
-      set(i => to(i))  
+      set(i => to(i))
       gone.clear()
     }, 600)
   })
-  
+
   // Now we're just mapping the animated values to our view, that's it. Btw, this component only renders once. :-)
   return props.map(({ x, y, rot, scale }, i) => (
     <animated.div key={i} style={{ transform: interpolate([x, y], (x, y) => `translate3d(${x}px,${y}px,0)`) }}>
@@ -61,9 +61,7 @@ export default function Deck({ pid, cards, oponentCard, playerStats, setPlayerSt
                     ? doUnfade([[...unfade[0], i], [...unfade[1]]])
                     : doUnfade([[...unfade[0]], [...unfade[1], i]])
                 }}
-              >
-                <Typography variant="h3">{i}</Typography>
-              </Container>
+              />
             ) : (
               <Container style={{
                 backgroundColor: 'rgba(255, 255, 0, 0.4)',
@@ -76,10 +74,10 @@ export default function Deck({ pid, cards, oponentCard, playerStats, setPlayerSt
                 <div style={{ paddingTop: '350px' }}>
                   {/* <Typography variant="h3">{i}</Typography> */}
                   <Typography variant="h3" noWrap align="center" style={{ fontWeight: 700 }} playerStats={playerStats}>{cards[i].name}</Typography>
-                  <CustomButton pid={pid} data={`Attack: ${cards[i].attack}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} revealedCount={revealedCount} setRevCount={setRevCount}  />
-                  <CustomButton pid={pid} data={`Speed: ${cards[i].speed}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} revealedCount={revealedCount} setRevCount={setRevCount}  />
-                  <CustomButton pid={pid} data={`Hp: ${cards[i].hp}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} revealedCount={revealedCount} setRevCount={setRevCount}  />
-                  <CustomButton pid={pid} data={`Weight: ${cards[i].weight}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} revealedCount={revealedCount} setRevCount={setRevCount}  />
+                  <CustomButton pid={pid} data={`Attack: ${cards[i].attack}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} revealedCount={revealedCount} setRevCount={setRevCount} pressed={pressed} />
+                  <CustomButton pid={pid} data={`Speed: ${cards[i].speed}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} revealedCount={revealedCount} setRevCount={setRevCount} pressed={pressed} />
+                  <CustomButton pid={pid} data={`Hp: ${cards[i].hp}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} revealedCount={revealedCount} setRevCount={setRevCount} pressed={pressed} />
+                  <CustomButton pid={pid} data={`Weight: ${cards[i].weight}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} unfade={unfade} doUnfade={doUnfade} revealedCount={revealedCount} setRevCount={setRevCount} pressed={pressed} />
                 </div>
               </Container>
             )
@@ -89,52 +87,51 @@ export default function Deck({ pid, cards, oponentCard, playerStats, setPlayerSt
   ))
 }
 
-function CustomButton({ pid, data, index, oponentCard, playerStats, setPlayerStats, unfade, doUnfade, revealedCount, setRevCount  }) {
+function CustomButton({ pid, data, index, oponentCard, playerStats, setPlayerStats, unfade, doUnfade, revealedCount, setRevCount, pressed }) {
   const id = data.split(":")[0].toLowerCase();
+  const [clicked, setClick] = useState("black");
+  if (pressed.has(index) && id === pressed.get(index) && clicked == "black") {
+    setClick("blue")
+  }
 
   return <Button
+    active
     id={id}
     onClick={(event) => {
       pid === 1
-      ? doUnfade([[...unfade[0], index], [...unfade[1]]])
-      : doUnfade([[...unfade[0]], [...unfade[1], index]])
+        ? doUnfade([[...unfade[0], index], [...unfade[1]]])
+        : doUnfade([[...unfade[0]], [...unfade[1], index]])
 
-      console.log("rev count:  "+revealedCount);
-      console.log(index);
-      console.log(event);
-      console.log(id);
-      console.log(oponentCard);
-      console.log(data.split(" ")[1]);
-      console.log(oponentCard[index][id]);
-      console.log(pid);
-      console.log(typeof (pid));
-      if(parseInt(data.split(" ")[1]) === oponentCard[index][id]) {
-        setPlayerStats([playerStats[0] + 1, playerStats[1] + 1]);
-      }
-      else if (pid === 0) {
-        if (parseInt(data.split(" ")[1]) > oponentCard[index][id]) {
-          console.log("Player 1 wins")
-          setPlayerStats([playerStats[0] + 1, playerStats[1]]);
-        } else {
-          console.log("Player 2 wins")
-          setPlayerStats([playerStats[0], playerStats[1] + 1]);
+      if (!pressed.has(index)) {
+        if (parseInt(data.split(" ")[1]) === oponentCard[index][id]) {
+          setPlayerStats([playerStats[0] + 1, playerStats[1] + 1]);
         }
-      } else {
-        if (parseInt(data.split(" ")[1]) > oponentCard[index][id]) {
-          console.log("Player 1 wins")
-          setPlayerStats([playerStats[0], playerStats[1] + 1]);
+        else if (pid === 0) {
+          if (parseInt(data.split(" ")[1]) > oponentCard[index][id]) {
+            console.log("Player 1 wins")
+            setPlayerStats([playerStats[0] + 1, playerStats[1]]);
+          } else {
+            console.log("Player 2 wins")
+            setPlayerStats([playerStats[0], playerStats[1] + 1]);
+          }
         } else {
-          console.log("Player 2 wins")
-          setPlayerStats([playerStats[0] + 1, playerStats[1]]);
+          if (parseInt(data.split(" ")[1]) > oponentCard[index][id]) {
+            console.log("Player 1 wins")
+            setPlayerStats([playerStats[0], playerStats[1] + 1]);
+          } else {
+            console.log("Player 2 wins")
+            setPlayerStats([playerStats[0] + 1, playerStats[1]]);
+          }
         }
+        setClick("blue")
+        pressed.set(index, id);
       }
       console.log(playerStats);
+
       setRevCount(revealedCount + 1);
-      // setTimeout(()=> {
-        
-      // }, 3000)
     }}
-    style={{ display: 'block', width: '100%', height: '30px', padding: '8px' }} >
+    style={{ display: 'block', width: '100%', height: '30px', padding: '8px', color: `${clicked}`, backgroundColor: 'rgba(255, 255, 255, 0.4)' }} >
+
     <Typography variant="h5">{data}</Typography>
   </Button>
 }
