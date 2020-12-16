@@ -13,7 +13,7 @@ const from = i => ({ x: 0, rot: 0, scale: 1.5, y: -1000 })
 // This is being used down there in the view, it interpolates rotation and scale into a css transform
 const trans = (r, s) => `perspective(1500px) rotateX(30deg) rotateY(${r / 10}deg) rotateZ(${r}deg) scale(${s})`
 
-export default function Deck({ cards }) {
+export default function Deck({ pid, cards, oponentCard, playerStats, setPlayerStats }) {
   const [gone] = useState(() => new Set()) // The set flags all the cards that are flicked out
 
   const [props, set] = useSprings(cards.length, i => ({ ...to(i), from: from(i) })) // Create a bunch of springs using the helpers above
@@ -34,7 +34,7 @@ export default function Deck({ cards }) {
   })
   // Now we're just mapping the animated values to our view, that's it. Btw, this component only renders once. :-)
   return props.map(({ x, y, rot, scale }, i) => (
-    <animated.div key={i} style={{ transform: interpolate([x, y], (x, y) => `translate3d(${x}px,${y}px,0)`)}}>
+    <animated.div key={i} style={{ transform: interpolate([x, y], (x, y) => `translate3d(${x}px,${y}px,0)`) }}>
       {/* This is the card itself, we're binding our gesture to it (and inject its index so we know which is which) */}
       <animated.div {...bind(i)} style={{
         backgroundColor: 'lightblue',
@@ -42,27 +42,53 @@ export default function Deck({ cards }) {
         backgroundImage: `url(${cards[i].url})`,
         backgroundSize: 'contain',
         backgroundPositionY: 'top',
-        backgroundSize: '350px',
       }} >
-        <Container style={{marginTop: '340px', backgroundColor: 'rgba(255, 255, 0, 0.4)', paddingBottom: '20px'}}>
-          <Typography variant="h3" align="center" style={{fontWeight: 700}}>{cards[i].name}</Typography>
-          <CustomButton data={`Attack: ${cards[i].attack}`} id={i} />
-          <CustomButton data={`Speed: ${cards[i].speed}`} id={i}/>
-          <CustomButton data={`Hp: ${cards[i].hp}`} id={i}/>
-          <CustomButton data={`Weight: ${cards[i].weight}`} id={i}/>
+        <Container style={{ marginTop: '340px', backgroundColor: 'rgba(255, 255, 0, 0.4)', paddingBottom: '20px' }}>
+          <Typography variant="h3" align="center" style={{ fontWeight: 700 }} playerStats={playerStats}>{cards[i].name}</Typography>
+          <CustomButton pid={pid} data={`Attack: ${cards[i].attack}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} />
+          <CustomButton pid={pid} data={`Speed: ${cards[i].speed}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} />
+          <CustomButton pid={pid} data={`Hp: ${cards[i].hp}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} />
+          <CustomButton pid={pid} data={`Weight: ${cards[i].weight}`} index={i} oponentCard={oponentCard} playerStats={playerStats} setPlayerStats={setPlayerStats} />
         </Container>
       </animated.div>
     </animated.div>
   ))
 }
 
-function CustomButton({ data, id }) {
+function CustomButton({ pid, data, index, oponentCard, playerStats, setPlayerStats }) {
+  const id = data.split(":")[0].toLowerCase();
+
   return <Button
-    id={data.split(":")[0]}
+    id={id}
     onClick={(event) => {
+      console.log(index);
       console.log(event);
+      console.log(id);
+      console.log(oponentCard);
+      console.log(data.split(" ")[1]);
+      console.log(oponentCard[index][id]);
+      console.log(pid);
+      console.log(typeof (pid));
+      if (pid === 0) {
+        if (parseInt(data.split(" ")[1]) > oponentCard[index][id]) {
+          console.log("Player 1 wins")
+          setPlayerStats([playerStats[0] + 1, playerStats[1]]);
+        } else {
+          console.log("Player 2 wins")
+          setPlayerStats([playerStats[0], playerStats[1] + 1]);
+        }
+      } else {
+        if (parseInt(data.split(" ")[1]) > oponentCard[index][id]) {
+          console.log("Player 1 wins")
+          setPlayerStats([playerStats[0], playerStats[1] + 1]);
+        } else {
+          console.log("Player 2 wins")
+          setPlayerStats([playerStats[0] + 1, playerStats[1]]);
+        }
+      }
+      console.log(playerStats);
     }}
-   style={{ display: 'block', width: '100%', height: '30px' }} >
+    style={{ display: 'block', width: '100%', height: '30px' }} >
     <Typography variant="h5">{data}</Typography>
   </Button>
 }

@@ -14,16 +14,17 @@ var a = 6;
 
 function App() {
   const [card, setCard] = React.useState([]);
-  const [loaded, setLoaded] = React.useState(false)
+  const [loaded, setLoaded] = React.useState(false);
+  const [playerStats, setPlayerStats] = React.useState([0, 0]);
 
-  useEffect(()=>{
+  useEffect(() => {
     setTimeout(() => {
       setLoaded(true)
-    }, 2000)
+    }, 6000)
   })
 
 
-  while(card.length < 8) {
+  while (card.length < 8) {
     getPokemons().then((pokemon) => {
       setCard([
         ...card,
@@ -36,25 +37,27 @@ function App() {
           'hp': pokemon.stats[0].base_stat,
         }])
     }).catch((e) => {
-      console.log("error during fetching "+ e);
-    })    
-    return  null;
-  }  
-
-  if (!loaded) {
-    return <Typography variant="h2" align="center" style={{marginTop: '40vh', color: 'white'}}> Data is dowloading </Typography>
+      console.log("error during fetching " + e);
+    })
+    return null;
   }
 
-  const c1 = card.slice(0, 4);  
+  if (!loaded) {
+    return <Typography variant="h3" align="center" style={{ marginTop: '40vh', color: 'green' }}>Shuffling from the deck of 150 cards</Typography>
+  }
+
+  const c1 = card.slice(0, 4);
   const c2 = card.slice(4, 8);
 
   return (
     <Grid container>
-      <Grid id="deck" item xs={6}>
-        <CardDeck cards={c1} />
+      <Grid id="deck" item xs={6} >
+        <Typography variant="h2" style={{ color: 'yellow' }}>{playerStats[0]}</Typography>
+        <CardDeck pid={0} cards={c1} oponentCard={c2} playerStats={playerStats} setPlayerStats={setPlayerStats} />
       </Grid>
       <Grid id="deck" item xs={6}>
-        <CardDeck cards={c2} />
+        <Typography variant="h2" style={{ color: 'red' }}>{playerStats[1]}</Typography>
+        <CardDeck pid={1} cards={c2} oponentCard={c1} playerStats={playerStats} setPlayerStats={setPlayerStats} />
       </Grid>
     </Grid>
   );
