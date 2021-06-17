@@ -19,7 +19,7 @@ var game = new Phaser.Game(config);
 var jet, bombs, sky, ammo, explosion, gunShot;
 var score = 0;
 var coinShot, coins;
-var scoretext; 
+var scoretext;
 
 function preload() {
   this.load.setBaseURL('./');
@@ -67,21 +67,22 @@ function create() {
     hideOnComplete: true
   })
 
-  this.physics.addCollider(jet, coins, collectCoins, null, this) 
-
   gunShot = this.sound.add('gun-shot')
   coinShot = this.sound.add('coin-shot')
-  coins = this.physics.add.group();
+  coins = this.physics.add.group({
+    setScale: { x: .01, y: .02 }
+  });
 
-  for(var i = 0; i < 10; i++) {
+  for (var i = 0; i < 10; i++) {
     let x = Phaser.Math.Between(0, config.width);
     let y = Phaser.Math.Between(0, 200);
 
-    let newCoin = coins.create(x, y, 'coin')
+    let newCoin = coins.create(x, y, 'coin').setScale(0.05)
     setObjVelocity(coins)
   }
+  this.physics.add.collider(jet, coins, collectCoins, null, this)
 
-  scoretext = this.add.text(15, 15, "Score: 0", {fontSize: 32, fill: "#ff0000"})
+  scoretext = this.add.text(15, 15, "Score: 0", { fontSize: 32, fill: "#ff0000" })
 }
 
 function shoot() {
@@ -105,7 +106,7 @@ function destroyBomb(ammo, bomb) {
   let yVel = Phaser.Math.Between(10, 150);
   bomb.setVelocity(xVel, yVel);
   score += 10;
-  scoretext.setText('Score : '  + score)
+  scoretext.setText('Score : ' + score)
 }
 
 function setObjVelocity(bombs) {
@@ -134,12 +135,12 @@ function collectCoins(jet, coin) {
   score += 10;
   coinShot.play();
   coin.disableBody(true, true)
-  let x =  Phaser.Math.Between(0, config.width - 10)
+  let x = Phaser.Math.Between(0, config.width - 10)
   coin.enableBody(true, x, 0, true, true)
   let xVel = Phaser.Math.Between(-60, 60);
   let yVel = Phaser.Math.Between(10, 150);
   coin.setVelocity(xVel, yVel);
-  scoretext.setText('Score : '  + score)
+  scoretext.setText('Score : ' + score)
 }
 
 function update() {
