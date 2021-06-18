@@ -4,9 +4,9 @@ var config = {
   height: 600,
   physics: {
     default: 'arcade',
-    // arcade: {
-    //   gravity: { y: 200 }
-    // }
+    arcade: {
+      gravity: { y: 10 }
+    }
   },
   scene: {
     preload: preload,
@@ -16,7 +16,7 @@ var config = {
 };
 
 var game = new Phaser.Game(config);
-var jet, bombs, sky, ammo, explosion, gunShot;
+var jet, bombs, sky, ammo, explosion, gunShot, button;
 var score = 0;
 var coinShot, coins;
 var scoretext;
@@ -38,6 +38,10 @@ function preload() {
   })
   this.load.audio('gun-shot', 'assets/sound/gun.wav')
   this.load.audio('coin-shot', 'assets/sound/gun.wav')
+  this.load.spritesheet('button', 'assets/images/play.png', {
+    frameWidth: 200,
+    frameHeight: 100
+  });
 }
 
 function create() {
@@ -81,8 +85,11 @@ function create() {
     setObjVelocity(coins)
   }
   this.physics.add.collider(jet, coins, collectCoins, null, this)
+  this.physics.add.collider(jet, bombs, gameOver, null, this);
 
   scoretext = this.add.text(15, 15, "Score: 0", { fontSize: 32, fill: "#ff0000" })
+
+  
 }
 
 function shoot() {
@@ -143,9 +150,28 @@ function collectCoins(jet, coin) {
   scoretext.setText('Score : ' + score)
 }
 
+function gameOver() {
+  let gameOverText = this.add.text(config.width / 4, config.height / 2.5, 'GAME OVER', { fontSize: '80px', fill: '#fff', fontWeight: 900,  });
+  gameOverText.setShadow(-5, 5, 'rgba(255,0,0,0.5)', 2);
+  jet.setTint(0xff0000)
+  button = this.add.sprite(400, 500, 'button').setInteractive()
+  button.on('pointerover', function (event) {
+    button.setScale(1.3)
+  })
+  button.on('pointerout', function (event) {
+    button.setScale(1)
+  })
+    
+  button.setDepth(1)
+  this.physics.pause();
+  
+}
+
+function startGame() {
+}
+
 function update() {
-  sky.tilePositioX += .3
-  sky.tilePositionY -= .3
+  sky.tilePositionY -= .2
   if (cursors.left.isDown) {
     jet.setVelocityX(-150);
   } else if (cursors.right.isDown) {
