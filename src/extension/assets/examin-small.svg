@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="139" height="55" viewBox="0 0 139 55" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M34.7436 51L29 42.1111L31.4615 41L37 49.6667L34.7436 51Z" fill="#EFEFEF" stroke="#EFEFEF"/>
+  <mask id="mask0" mask-type="alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="42" height="53">
+    <path d="M25 51H1.74846e-07M2 0L2 52M0 2L40 2M40 0V19" stroke="white" stroke-width="4"/>
+  </mask>
+  <g mask="url(#mask0)">
+    <rect width="42" height="53" rx="4" fill="#EFEFEF"/>
+  </g>
+  <text style="white-space: pre; fill: rgb(51, 51, 51); font-family: Arial, sans-serif; font-size: 3.2px;" x="31.058" y="28.999"> </text>
+  <text style="fill: rgb(239, 239, 239); font-family: Arial, sans-serif; font-size: 14px; font-weight: 700; white-space: pre;" x="13.653" y="35.992">TestGenExtension</text>
+  <text style="white-space: pre; fill: rgb(51, 51, 51); font-family: Arial, sans-serif; font-size: 3.2px;" x="27.255" y="24.966"> </text>
+  <text style="white-space: pre; fill: rgb(51, 51, 51); font-family: Arial, sans-serif; font-size: 3.2px;" x="179.951" y="33.724"> </text>
+</svg>
